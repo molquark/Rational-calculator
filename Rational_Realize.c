@@ -115,6 +115,9 @@ int Free_Rational(Rational* Q) {
 		*Q = NULL;
 		return 1;
 	}
+	free(*Q);
+	*Q = NULL;
+	return 1;
 }
 int Add_Left_LtoR(Rational Q, char num) {
 	Rational_Node R_Node, L_Node, New;
@@ -206,7 +209,7 @@ int Clear_after_Sub(Rational Q) {
 }
 int Move_Head_Left(Rational Q, int num) {
 	if (!num)return 1;
-	Rational_Node New,L_Node,R_Node;
+	Rational_Node L_Node,R_Node;
 	int i,all;
 	//把入口节点抽离出双向链表
 	if (Q->left_num && Q->right_num) {
@@ -284,10 +287,11 @@ int Move_Head_Left(Rational Q, int num) {
 		Move_Head_Left(Q, num);
 		return 1;
 	}
+	return 1;
 }
 int Move_Head_Right(Rational Q, int num) {
 	if (!num)return 1;
-	Rational_Node New, L_Node, R_Node;
+	Rational_Node  L_Node, R_Node;
 	int i, all;
 	if (!num) {
 		return 1;
@@ -370,6 +374,7 @@ int Move_Head_Right(Rational Q, int num) {
 		Move_Head_Right(Q, num);
 		return 1;
 	}
+	return 1;
 }
 int Add_Int_Rational(Rational Rational1, Rational Rational2, Rational C) {
 	int D = 0;
@@ -507,6 +512,7 @@ int Add_Rational(Rational Q1, Rational Q2, Rational C) {
 		Move_Head_Left(Q1, move_point);
 		Move_Head_Left(Q2, move_point);//此处Q1 Q2可不恢复，认为输入函数的数据均已丢弃，只需要结果
 		Move_Head_Left(C, move_point);//移位后的C即为所求
+		Clear_Right_Rational(C);//删除移位后小数部分可能出现的末尾0
 		return 1;
 	}
 	//情况2，a正b负
@@ -515,6 +521,7 @@ int Add_Rational(Rational Q1, Rational Q2, Rational C) {
 		//改变b的符号，引用减法
 		Q2->sign = 1;//Q2变为其绝对值
 		Sub_Rational(Q1, Q2, C);
+		Clear_Right_Rational(C);//删除移位后小数部分可能出现的末尾0
 		return 1;
 	}
 	//情况3，a负b正
@@ -523,6 +530,7 @@ int Add_Rational(Rational Q1, Rational Q2, Rational C) {
 		//改变a的符号为正
 		Q1->sign = 1;//Q1变为其绝对值
 		Sub_Rational(Q2, Q1, C);
+		Clear_Right_Rational(C);//删除移位后小数部分可能出现的末尾0
 		return 1;
 	}
 	//情况4，a b 都是负
@@ -533,8 +541,10 @@ int Add_Rational(Rational Q1, Rational Q2, Rational C) {
 		all_sign = -1;
 		Add_Rational(Q1, Q2, C);
 		C->sign = all_sign;
+		Clear_Right_Rational(C);//删除移位后小数部分可能出现的末尾0
 		return 1;
 	}
+	return 1;
 }
 int Sub_Rational(Rational Q1, Rational Q2, Rational C) {
 	char all_sign = 1;
@@ -573,6 +583,7 @@ int Sub_Rational(Rational Q1, Rational Q2, Rational C) {
 			Move_Head_Left(C, move_point);//恢复答案小数部分
 		}
 		Clear_after_Sub(C);
+		Clear_Right_Rational(C);//删除移位后小数部分可能出现的末尾0
 		return 1;
 	}
 	//情况2，a正b负
@@ -580,6 +591,7 @@ int Sub_Rational(Rational Q1, Rational Q2, Rational C) {
 		//相当于a加b的绝对值
 		Q2->sign = 1;
 		Add_Rational(Q1, Q2, C);
+		Clear_Right_Rational(C);//删除移位后小数部分可能出现的末尾0
 		return 1;
 	}
 	//情况3，a负b正
@@ -588,6 +600,7 @@ int Sub_Rational(Rational Q1, Rational Q2, Rational C) {
 		Q1->sign = 1;
 		Add_Rational(Q1, Q2, C);
 		C->sign = -1;//最后结果取负
+		Clear_Right_Rational(C);//删除移位后小数部分可能出现的末尾0
 		return 1;
 	}
 	//情况4，a b 都是负
@@ -595,8 +608,10 @@ int Sub_Rational(Rational Q1, Rational Q2, Rational C) {
 		//b的绝对值减a的绝对值
 		Q1->sign = Q2->sign = 1;//两个数都取绝对值
 		Sub_Rational(Q2, Q1, C);
+		Clear_Right_Rational(C);//删除移位后小数部分可能出现的末尾0
 		return 1;
 	}
+	return 1;
 }
 int Mul_Rational(Rational Q1, Rational Q2, Rational C) {
 	//先判断特殊情况，存在一个乘数为0，则结果为0
@@ -639,6 +654,8 @@ int Mul_Rational(Rational Q1, Rational Q2, Rational C) {
 	Free_Rational(&C1);
 	Free_Rational(&C2);
 	Free_Rational(&C3);
+	Clear_Right_Rational(C);//删除移位后小数部分可能出现的末尾0
+	return 1;
 }
 int Is_Zero_Rational(Rational Q) {
 	if (!Q->left_num && !Q->right_num) {
@@ -673,6 +690,7 @@ int Is_Zero_Rational(Rational Q) {
 			return 0;
 		}
 	}
+	return 1;
 }
 int Unsigned_lt_Rational(Rational a, Rational b) {
 	Clear_after_Sub(a);
@@ -782,6 +800,7 @@ int Unsigned_lt_Rational(Rational a, Rational b) {
 			return 0;
 		}
 	}
+	return -1;
 }
 int Unsigned_gt_Rational(Rational a, Rational b) {
 	//大于号即小于号的数据交换
@@ -951,6 +970,7 @@ char Get_Num(int end) {
 	if (ch == '\n') {
 		return '\n';
 	}
+	return -1;
 }
 char Get_Num_Alpha(int end) {
 	if (!isalpha(end)) {
@@ -994,6 +1014,7 @@ char Num_Turn_Alpha(int num) {
 	if (num >= 10) {
 		return 'A' + num - 10;
 	}
+	return -1;
 }
 int Input_Rational(Rational* Q, int Base) {
 	init_Rational(Q, Base);//初始化结构
@@ -1049,11 +1070,13 @@ int Input_Rational(Rational* Q, int Base) {
 			}
 			if (ch == POINT) {
 				have_Point += 1;
+				if (have_Point > 1) {
+					//小数点超过一个，非法输入
+					return -1;
+				}
+				continue;
 			}
-			if (have_Point > 1) {
-				//小数点超过一个，非法输入
-				return -1;
-			}
+			
 			if (isalpha(ch)) {
 				//如果ch是字母，转换成数字
 				ch = Alpha_Turn_Num(ch);
@@ -1161,13 +1184,27 @@ int Div_Rational(Rational Q1, Rational Q2, Rational C) {
 	C->sign = all_sign;//修改结果符号
 	Clear_after_Sub(C);//删除结果前面可能出现的0
 	Move_Head_Left(C, exact_move + add_move);
+	Clear_Right_Rational(C);//删除小数末尾可能出现的0
 	return 1;
 }
 
 
+/*************** 版本更新1.1  *******************/
 
-
-
+int Clear_Right_Rational(Rational Q) {
+	if (Q->right_num == 0) {
+		return 1;//无小数部分直接返回
+	}
+	Rational_Node point = Q->right_end;
+	while (point->num == 0 && Q->right_num != 0) {
+		Q->right_end = point->left;
+		free(point);
+		point = Q->right_end;//释放小数最后的0结点，并将结尾指针前移
+		Q->right_end->right = NULL;
+		Q->right_num--;//结尾结点右指针为NULL，小数部分计数减一
+	}
+	return 1;
+}
 
 
 

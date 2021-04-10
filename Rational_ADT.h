@@ -1,5 +1,5 @@
 #ifndef RATIONAL_ADT
-#define RATIONAL_ADT 0
+#define RATIONAL_ADT 1
 #define POINT -128 //即（01000000）2
 #define EXACT 20 //除法进行的精确度（也许吧）
 struct Rational_Node_ADT {
@@ -216,10 +216,11 @@ int Div_Int_Rational(Rational Q1, Rational Q2, Rational C);
 int Div_Rational(Rational Q1, Rational Q2, Rational C);
 
 
+/*********** 更新1.1             ****************/
 
-
-
-
+/*清除小数部分末端多余的0
+* 用于多个抽象运算后对结果的处理*/
+int Clear_Right_Rational(Rational Q);
 
 
 

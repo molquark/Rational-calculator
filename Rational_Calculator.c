@@ -10,7 +10,6 @@ int main(void) {
 	Rational C;
 	int Base;
 	char way;
-	int num;
 	loop:
 	printf("请输入计算进制:\n");
 	scanf(" %d", &Base);
